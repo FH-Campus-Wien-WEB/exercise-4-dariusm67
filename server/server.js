@@ -39,10 +39,26 @@ app.post("/login", function (req, res) {
   }
 });
 
-// Task 1.3: Implement the GET `/logout` endpoint and requireLogin
-// protection. Implement logout by destroying the session 
-// with error handling. Protect all endpoints that need 
-// authentication with `requireLogin`.
+// --- Task 1.3 ---
+function requireLogin(req, res, next) {
+  if (req.session && req.session.user) {
+    next(); // They have a valid session, let them in!
+  } else {
+    res.sendStatus(401); // No session? Kick them out!
+  }
+}
+
+// --- Task 1.3: The Logout Route ---
+app.get("/logout", function (req, res) {
+  req.session.destroy(function (err) {
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.sendStatus(500);
+    } else {
+      res.sendStatus(200);
+    }
+  });
+});
 
 app.get("/session", function (req, res) {
   if (req.session.user) {
@@ -52,7 +68,7 @@ app.get("/session", function (req, res) {
   }
 });
 
-app.get("/movies", function (req, res) {
+app.get("/movies", requireLogin, function (req, res) {
   const username = req.session.user.username;
   let movies = Object.values(movieModel.getUserMovies(username));
   const queriedGenre = req.query.genre;
@@ -63,7 +79,7 @@ app.get("/movies", function (req, res) {
 });
 
 // Configure a 'get' endpoint for a specific movie
-app.get("/movies/:imdbID", function (req, res) {
+app.get("/movies/:imdbID", requireLogin, function (req, res) {
   const username = req.session.user.username;
   const id = req.params.imdbID;
   const movie = movieModel.getUserMovie(username, id);
@@ -76,22 +92,49 @@ app.get("/movies/:imdbID", function (req, res) {
 });
 
 // Configure a 'put' endpoint for a specific movie to update or insert a movie
-app.put("/movies/:imdbID", function (req, res) {
+app.put("/movies/:imdbID", requireLogin, function (req, res) {
   const username = req.session.user.username;
   const imdbID = req.params.imdbID;
   const exists = movieModel.getUserMovie(username, imdbID) !== undefined;
 
   if (!exists) {
-    // Task 2.3: Fetch the movie data from OmdbAPI, follow the pattern used further down 
-    // in the GET /search endpoint. Implement conversion of the OmdbAPI response to the 
-    // movie format used in the frontend. Make sure to handle errors and timeouts properly.
+    const url = `http://www.omdbapi.com/?i=${imdbID}&apikey=${config.omdbApiKey}`;
+    
+    fetch(url)
+      .then(apiRes => apiRes.json())
+      .then(omdbData => {
+        if (omdbData.Response === 'True') {
+          const movie = {
+            imdbID: omdbData.imdbID,
+            Title: omdbData.Title,
+            Year: parseInt(omdbData.Year),
+            Plot: omdbData.Plot || "No plot available.",
+            Poster: omdbData.Poster,
+            Runtime: parseInt(omdbData.Runtime) || 0, 
+            Released: omdbData.Released,
+            
+            Genres: omdbData.Genre ? omdbData.Genre.split(", ") : [],
+            Directors: omdbData.Director ? omdbData.Director.split(", ") : [],
+            Writers: omdbData.Writer ? omdbData.Writer.split(", ") : [],
+            Actors: omdbData.Actors ? omdbData.Actors.split(", ") : []
+          };
+
+          movieModel.setUserMovie(username, imdbID, movie);
+          res.sendStatus(201);
+        } else {
+          res.sendStatus(404);
+        }
+      })
+      .catch((err) => {
+        console.error("OMDb fetch error:", err);
+        res.sendStatus(500);
+      });
   } else {
-    movieModel.setUserMovie(username, imdbID, req.body);
     res.sendStatus(200);
   }
 });
 
-app.delete("/movies/:imdbID", function (req, res) {
+app.delete("/movies/:imdbID", requireLogin, function (req, res) {
   const username = req.session.user.username;
   const id = req.params.imdbID;
   if (movieModel.deleteUserMovie(username, id)) {
@@ -102,7 +145,7 @@ app.delete("/movies/:imdbID", function (req, res) {
 });
 
 // Configure a 'get' endpoint for genres of all movies of the current user
-app.get("/genres", function (req, res) {
+app.get("/genres", requireLogin, function (req, res) {
   const username = req.session.user.username;
   const genres = movieModel.getGenres(username);
   genres.sort();
@@ -112,7 +155,7 @@ app.get("/genres", function (req, res) {
 /* Task 2.1. Add the GET /search endpoint: Query omdbapi.com and return
    a list of the results you obtain. Only include the properties 
    mentioned in the README when sending back the results to the client. */
-app.get("/search", function (req, res) {
+app.get("/search", requireLogin, function (req, res) {
   const username = req.session.user.username;
   const query = req.query.query;
   if (!query) {

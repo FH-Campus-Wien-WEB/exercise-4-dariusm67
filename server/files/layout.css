@@ -1,60 +1,50 @@
 @import url(base.css);
 
-h1 {
-  font-size: 200%;
-  margin: 8px 0px;
-}
-
-html,
-body {
-  margin: 0px;
+/* ---- BASE ---- */
+html, body {
+  margin: 0;
   height: 100vh;
 }
 
-/* The nav's header and button list will be centered */
-nav {
+body {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 ul {
-  margin-top: 0px;
+  margin-top: 0;
   padding: 2px;
   list-style-type: none;
 }
 
-body {
-  display: grid;
-  grid-template-rows: 92px auto 64px;
-  grid-template-columns: 192px auto;
-  grid-template-areas: "h h" "n m" "f f";
-  margin: 0;
+article h2 {
+  margin-bottom: 0;
 }
 
-header {
-  grid-area: h;
-}
-
+/* ---- NAV (mobile: stacks naturally) ---- */
 nav {
   grid-area: n;
-}
-
-main {
-  grid-area: m;
-  overflow-y: auto;
-}
-
-footer {
-  grid-area: f;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
 }
 
 nav > ul {
-  display: flex;
-  flex-direction: column;
-  row-gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0;
 }
 
+/* ---- MAIN ---- */
+main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  justify-content: center;
+}
+
+/* ---- FOOTER ---- */
 footer > ul {
   display: flex;
   flex-direction: row;
@@ -62,19 +52,44 @@ footer > ul {
   justify-content: center;
 }
 
-article h2 {
-  margin-bottom: 0px;
-}
+/* ---- DESKTOP (768px+) ---- */
+@media (min-width: 768px) {
+  body {
+    display: grid;
+    grid-template-rows: 92px 1fr 64px;
+    grid-template-columns: 192px auto;
+    grid-template-areas: "h h" "n m" "f f";
+    overflow: hidden;
+  }
 
-/* navigation buttons have full width */
-nav button {
-  width: 100%;
-}
+  header { grid-area: h; }
 
-img {
-  border-radius: 12px;
-}
+  nav {
+    grid-area: n;
+    overflow-y: auto;
+  }
 
-a {
-  color: beige;
+  main {
+    grid-area: m;
+    overflow-y: auto;
+    align-content: flex-start;
+  }
+
+  footer { grid-area: f; }
+
+  nav > ul {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    row-gap: 8px;
+  }
+
+  nav > ul:first-of-type {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  nav button {
+    width: 100%;
+  }
 }

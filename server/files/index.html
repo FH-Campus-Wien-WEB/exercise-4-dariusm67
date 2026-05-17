@@ -17,24 +17,18 @@
       <h2>Genres</h2>
       <ul id="filter"></ul>
       <h2>Manage</h2>
-      <ul>
-        <li>
           <button id="addMoviesBtn">Add movies</button>
-        </li>
-        <li>
           <button id="authBtn">Login</button>
-        </li>
-      </ul>
     </nav>
     <main></main>
     <footer>
       <ul>
         <li>&copy; Movies!</li>
         <li>&#8213;</li>
-        <li>Written by <a href="mailto:jane.doe@example.com">Jane Doe</a></li>
+        <li>Written by&nbsp;<a href="mailto:dariusdavid.mitaichie@ulbsibiu.ro">Darius Mitaichie</a></li>
         <li>&#8213;</li>
         <li>
-          Visit us at
+          Visit us at&nbsp;
           <a href="https://www.hcw.ac.at/" target="_blank">UAS Campus Vienna</a>
         </li>
       </ul>
@@ -55,6 +49,22 @@
     <!-- Task 2.1: Add a search dialog markup. Make sure the ids of the elements 
      match the ones used in index.js. Your dialog needs a form and submit and cancel
      buttons. -->
+
+     <dialog id="searchDialog">
+      <h2>Search for a Movie</h2>
+      
+      <form id="searchForm">
+        <label for="query">Movie Title:</label>
+        <input type="text" id="query" required placeholder="e.g. Inception">
+        
+        <div style="margin-top: 10px;">
+          <button type="submit">Search</button>
+          <button type="button" id="cancelSearch">Cancel</button>
+        </div>
+      </form>
+
+      <div id="searchResults" style="margin-top: 15px;"></div>
+    </dialog>
     
   </body>
 </html>
